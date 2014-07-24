@@ -7,7 +7,7 @@ Project: https://github.com/progrium/dokku
 
 Requirements
 ------------
-* Docker version `0.7.2` or higher
+* Docker version `1.1.2` or higher
 * Dokku version `0.2.1` or higher
 
 Installation
@@ -23,14 +23,15 @@ Commands
 --------
 ```
 $ dokku help
-    postgresql:create <db>                         Create a PostgreSQL container
-    postgresql:delete <db>                         Delete specified PostgreSQL container
-    postgresql:dump <db> > dump_file.sql           Dump database data
-    postgresql:info <db>                           Display database informations
-    postgresql:link <app> <db>                      Link an app to a PostgreSQL database
-    postgresql:list                                 Display list of PostgreSQL containers
-    postgresql:logs <db>                           Display last logs from PostgreSQL container
-    postgresql:restore <db> < dump_file.sql        Restore database data from a previous dump
+    pg:create <db>                         Create a PostgreSQL container
+    pg:delete <db>                         Delete specified PostgreSQL container
+    pg:dump <db> > dump_file.sql           Dump database data
+    pg:info <db>                           Display database informations
+    pg:link <app> <db>                     Link an app to a PostgreSQL database
+    pg:list                                Display list of PostgreSQL containers
+    pg:logs <db>                           Display last logs from PostgreSQL container
+    pg:restore <db> < dump_file.sql        Restore database data from a previous dump
+    pg:psql <db>                           Open interactive shell
 ```
 
 Simple usage
@@ -59,49 +60,54 @@ $ git push dokku master
 
 Link your app to the database
 ```bash
-dokku postgresql:link app_name database_name
+dokku pg:link app_name database_name
 ```
 
 
 Advanced usage
 --------------
 
-Inititalize the database with SQL statements:
+Initialize the database with SQL statements:
 ```
-cat init.sql | dokku postgresql:create foo
+cat init.sql | dokku pg:create <db>
 ```
 
-Deleting databases:
+Deleting database:
 ```
-dokku postgresql:delete foo
+dokku pg:delete <db>
 ```
 
 Linking an app to a specific database:
 ```
-dokku postgresql:link foo bar
+dokku pg:link <db> <app>
 ```
 
 PostgreSQL logs (per database):
 ```
-dokku postgresql:logs foo
+dokku pg:logs <db>
 ```
 
-Database informations:
+Database information:
 ```
-dokku postgresql:info foo
+dokku pg:info <db>
 ```
 
 List of containers:
 ```
-dokku postgresql:list
+dokku pg:list
 ```
 
 Dump a database:
 ```
-dokku postgresql:dump foo > foo.sql
+dokku pg:dump <db> > foo.sql
 ```
 
 Restore a database:
 ```
-dokku postgresql:restore foo < foo.sql
+dokku pg:restore <db> < foo.sql
+```
+
+Open interactive shell:
+```
+dokku pg:psql <db>
 ```
