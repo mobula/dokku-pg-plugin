@@ -2,5 +2,6 @@
 
 # Build docker image
 git clone https://github.com/mobula/dokku-pg-dockerfiles /tmp/dokku-pg-dockerfiles
+cd /tmp/dokku-pg-dockerfiles && git checkout postgis-2.1 && cd -
 docker build -q=true -t mobula/postgresql /tmp/dokku-pg-dockerfiles
 rm -rf /tmp/dokku-pg-dockerfiles
