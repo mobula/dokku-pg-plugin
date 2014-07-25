@@ -1,9 +1,14 @@
-PostgreSQL plugin for Dokku
----------------------------
+PostgreSQL w/ PostGIS plugin for Dokku
+--------------------------------------
 
 Project: https://github.com/progrium/dokku
 
 **Warning: This plugin is under development and still only tested with the below dependencies**
+
+Based on kloadut's dokku-pg-plugin-kloadut: Each database resides in its own container.
+
+For single container, see jeffutter's https://github.com/jeffutter/dokku-postgresql-plugin
+
 
 Requirements
 ------------
@@ -39,7 +44,7 @@ Simple usage
 
 Create a new DB:
 ```
-$ dokku postgresql:create foo            # Server side
+$ dokku pg:create foo            # Server side
 $ ssh dokku@server postgresql:create foo # Client side
 
 -----> PostgreSQL container created: postgresql/foo

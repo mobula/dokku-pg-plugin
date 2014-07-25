@@ -84,11 +84,11 @@ case "$1" in
     PORT=$(docker port $ID 5432 | sed 's/0.0.0.0://')
     echo $PORT > "$DOKKU_ROOT/.postgresql/port_$APP"
     # Link to a potential existing app
-    dokku postgresql:link $APP $APP
+    dokku pg:link $APP $APP
     echo
     echo "-----> PostgreSQL container created: $DB_IMAGE"
     sleep 1
-    dokku postgresql:info $APP
+    dokku pg:info $APP
     ;;
 
   pg:delete)
