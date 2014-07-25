@@ -2,7 +2,7 @@
 
 IMAGE_NAME="mobula/postgresql"
 #GITREPO="https://github.com/mobula/docker-postgresql-postgis"
-GITREPO="https://github.com/mobula/dokku-pg-plugin"
+GITREPO="https://github.com/mobula/dokku-pg-dockerfiles"
 TMPDIR="/tmp/dokku-pg-dockerfiles"
 
 # Build docker image
