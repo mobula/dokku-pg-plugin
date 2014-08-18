@@ -1,11 +1,21 @@
 #!/bin/bash
 set -e;
 
+PLUGIN_NAME="postgresql"
 DOCKER_IMAGE_NAME="mobula/postgresql"
 
+
+
+DB_HOST='172.17.42.1'
+DB_PORT='5432'
+DB_NAME='db'
+DB_USER='root'
+ENVVAR_NAME="DATABASE_URL"
+
+
 # Check if name is specified
-if [[ $1 == postgresql:* ]]; then
-    if [ -z $2 ] && [ $1 != postgresql:list ]; then
+if [[ $1 == pg:* ]]; then
+    if [ -z $2 ] && [ $1 != pg:list ]; then
         echo "You must specify an app name"
         exit 1
     else
@@ -16,6 +26,7 @@ if [[ $1 == postgresql:* ]]; then
         else
             APP_EXISTS=false
         fi
+        DB_IMAGE=postgresql/$APP
     fi
 fi
 
@@ -40,16 +51,30 @@ function check_postgresql_tool() {
     fi
 }
 
+function connect_to_db() {
+    export PGPASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$APP")
+    PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$APP")
+
+    psql -h $DB_HOST -p $PORT -U $DB_USER $DB_NAME
+}
+
+
 case "$1" in
 
+  pg:psql)
+    check_postgresql_container
+    check_postgresql_tool psql
+    connect_to_db
+    ;;
+    
   pg:create)
-    DB_IMAGE=postgresql/$APP
     # Check if DB container is installed
     IMAGE=$(docker images | grep "$DOCKER_IMAGE_NAME " |  awk '{print $3}')
     if [[ -z $IMAGE ]]; then
         echo "PostgreSQL image $DOCKER_IMAGE_NAME not found... Did you run 'dokku plugins-install' ?"
         exit 1
     fi
+    
     # Check if an existing DB volume exists
     if [[ -f "$DOKKU_ROOT/.postgresql/volume_$APP" ]]; then
         VOLUME="`cat $DOKKU_ROOT/.postgresql/volume_$APP`:/opt/postgresql"
@@ -63,14 +88,17 @@ case "$1" in
         chown dokku: "$DOKKU_ROOT/.postgresql/pwd_$APP"
         chmod 700 "$DOKKU_ROOT/.postgresql/pwd_$APP"
     fi
+    
     # Fork DB image
     ID=$(docker run -d $DOCKER_IMAGE_NAME echo '')
     docker wait $ID > /dev/null
     IMAGE=$(docker commit $ID)
     docker tag $IMAGE $DB_IMAGE
+    
     # Launch container
     ID=$(docker run -v $VOLUME -p 5432 -d $DB_IMAGE /usr/bin/start_pgsql.sh $DB_PASSWORD)
     sleep 4
+    
     # Rename persistent volume
     if [[ ! -f "$DOKKU_ROOT/.postgresql/volume_$APP" ]]; then
         VOLUME_PATH=$(docker inspect $ID | grep /var/lib/docker/vfs/dir/ | awk '{print $2}' | sed -e's/"//g')
@@ -80,9 +108,11 @@ case "$1" in
         fi
         echo $VOLUME_PATH > "$DOKKU_ROOT/.postgresql/volume_$APP"
     fi
+    
     # Write port for further usage
     PORT=$(docker port $ID 5432 | sed 's/0.0.0.0://')
     echo $PORT > "$DOKKU_ROOT/.postgresql/port_$APP"
+    
     # Link to a potential existing app
     dokku pg:link $APP $APP
     echo
@@ -92,7 +122,6 @@ case "$1" in
     ;;
 
   pg:delete)
-    DB_IMAGE=postgresql/$APP
     ID=$(docker ps -a | grep "$DB_IMAGE":latest |  awk '{print $1}')
     # Stop and remove the container
     if [[ ! -z $ID ]]; then
@@ -128,7 +157,7 @@ case "$1" in
     export PGPASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$APP")
     PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$APP")
 
-    pg_dump -h 172.17.42.1 -p $PORT -U root -c -O db
+    pg_dump -h $DB_HOST -p $PORT -U $DB_USER -c -O $DB_NAME
 
     # echo to stderr, as stdout will probably be redirected to a file
     echo 1>&2
@@ -140,14 +169,15 @@ case "$1" in
     DB_PASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$APP")
     PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$APP")
 
+
     echo
-    echo "       Host: 172.17.42.1"
+    echo "       Host: $DB_HOST"
     echo "       Port: $PORT"
-    echo "       User: 'root'"
+    echo "       User: '$DB_USER'"
     echo "       Password: '$DB_PASSWORD'"
-    echo "       Database: 'db'"
+    echo "       Database: '$DB_NAME'"
     echo
-    echo "       Url: 'postgres://root:$DB_PASSWORD@172.17.42.1:$PORT/db'"
+    echo "       Url: 'postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$PORT/$DB_NAME'"
     echo
     ;;
 
@@ -166,14 +196,13 @@ case "$1" in
         DB_PASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$3")
         PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$3")
         # Link database using dokku command
-        dokku config:set $APP "DATABASE_URL=postgres://root:$DB_PASSWORD@172.17.42.1:$PORT/db"
+        dokku config:set $APP "DATABASE_URL=postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$PORT/db"
         echo
         echo "-----> $APP linked to $DB_IMAGE database"
     fi
     ;;
 
   pg:logs)
-    DB_IMAGE=postgresql/$APP
     ID=$(docker ps -a | grep "$DB_IMAGE" |  awk '{print $1}')
     docker logs $ID | tail -n 100
     ;;
@@ -196,26 +225,16 @@ case "$1" in
     export PGPASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$APP")
     PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$APP")
 
-    psql -h 172.17.42.1 -p $PORT -U root db
+    psql -h $DB_HOST -p $PORT -U $DB_USER $DB_NAME
 
     echo
     echo "-----> $APP database restored"
     ;;
 
-  pg:psql)
-    check_postgresql_container
-    check_postgresql_tool psql
-    export PGPASSWORD=$(cat "$DOKKU_ROOT/.postgresql/pwd_$APP")
-    PORT=$(cat "$DOKKU_ROOT/.postgresql/port_$APP")
-
-    psql -h 172.17.42.1 -p $PORT -U root db
-
-    echo
-    echo "-----> $APP database restored"
-    ;;
 
   help)
     cat && cat<<EOF
+    pg:psql <db>                                    Open a PostgreSQL console
     pg:create <db>                                  Create a PostgreSQL container
     pg:delete <db>                                  Delete specified PostgreSQL container
     pg:dump <db> > dump_file.sql                    Dump database data
