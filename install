@@ -1,11 +1,7 @@
 #!/bin/bash
 
 IMAGE_NAME="mobula/postgresql"
-#GITREPO="https://github.com/mobula/docker-postgresql-postgis"
-GITREPO="https://github.com/mobula/dokku-pg-dockerfiles"
-TMPDIR="/tmp/dokku-pg-dockerfiles"
+IMAGE_PATH="github.com/mobula/docker-postgresql-postgis"
 
 # Build docker image
-git clone $GITREPO $TMPDIR
-docker build -q=true -t $IMAGE_NAME $TMPDIR
-rm -rf $TMPDIR
+docker build -q=true -t $IMAGE_NAME $IMAGE_PATH
