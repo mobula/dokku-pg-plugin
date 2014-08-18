@@ -1,9 +1,9 @@
 PostgreSQL w/ PostGIS plugin for Dokku
 --------------------------------------
 
-> **Warning:** This plugin is under development and still only tested with the below dependencies
-
 Based on [kloadut](https://github.com/Kloadut)'s **dokku-pg-plugin**: https://github.com/Kloadut/dokku-pg-plugin
+
+> **Warning:** This plugin is under development and still only tested with the below dependencies
 
 Compared to kloadut's version:
 
