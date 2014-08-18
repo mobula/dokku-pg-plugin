@@ -1,25 +1,33 @@
 PostgreSQL w/ PostGIS plugin for Dokku
 --------------------------------------
 
-Project: https://github.com/progrium/dokku
+> **Warning:** This plugin is under development and still only tested with the below dependencies
 
-**Warning: This plugin is under development and still only tested with the below dependencies**
+Based on [kloadut](https://github.com/Kloadut)'s **dokku-pg-plugin**: https://github.com/Kloadut/dokku-pg-plugin
 
-Based on kloadut's dokku-pg-plugin-kloadut: Each database resides in its own container.
+Compared to kloadut's version:
 
-For single container, see jeffutter's https://github.com/jeffutter/dokku-postgresql-plugin
+  * commands follow the Heroku command format as much as possible, i.e, `dokku pg:create <db>` instead of `dokku postgres:create <db>`
+  * Adds **postgis 2.1** support (in default branch `postgis2.1)
+    - [x] Dockerfile
+    - [ ] Dokku commands
+
+> ###### Note
+> Each database will be created in its own container.
+> For single container, see jeffutter's https://github.com/jeffutter/dokku-postgresql-plugin
 
 
 Requirements
 ------------
 * Docker version `1.1.2` or higher
-* Dokku version `0.2.1` or higher
+* Dokku version `0.2.3` or higher - Project: https://github.com/progrium/dokku
+
 
 Installation
 ------------
 ```
 cd /var/lib/dokku/plugins
-git clone https://github.com/Kloadut/dokku-pg-plugin postgresql
+git clone https://github.com/mobula/dokku-pg-plugin postgresql
 dokku plugins-install
 ```
 
