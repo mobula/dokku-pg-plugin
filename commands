@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e;
-#set -vx;
+#set -v;
+#set -x;
 
 PLUGIN_NAME="postgresql"
 DOCKER_IMAGE="mobula/postgresql"
@@ -25,23 +26,36 @@ ENVVAR_NAME="DATABASE_URL"
 
 # Check if name is specified
 if [[ $1 == pg:* ]]; then
-    if [ -z $2 ] && [ $1 != pg:list ]; then
-        echo "You must specify an app name"
-        exit 1
-    else
-        APP="$2"
-        # Check if app exists with the same name
-        if [[ -d "$DOKKU_ROOT/$APP" ]]; then
-            APP_EXISTS=true
+    if [ $1 != pg:list ]; then
+
+        if [ -z $2 ]; then
+            echo "You must specify an app name"
+            exit 1
+
         else
-            APP_EXISTS=false
+            if [[ ! -d "$PLUGIN_PATH/link" ]]; then
+                echo "Link plugin not found... Did you install it from https://github.com/rlaneve/dokku-link?"
+                exit 1
+            fi
+
+            APP="$2"
+
+            # Check if app exists with the same name
+            if [[ -d "$DOKKU_ROOT/$APP" ]]; then
+                APP_EXISTS=true
+            else
+                APP_EXISTS=false
+            fi
+
+            # The container name that will be generated
+            CONTAINER_NAME="pg_$APP"
+
+            # Dokku persistent info
+            HOST_DIR="$DOKKU_ROOT/.postgresql/$APP"
+            #HOST_DIR="$DOKKU_ROOT/$APP/$PLUGIN_NAME"
+
         fi
     fi
-    if [[ ! -d "$PLUGIN_PATH/link" ]]; then
-        echo "Link plugin not found... Did you install it from https://github.com/rlaneve/dokku-link?"
-        exit 1
-    fi
-
 fi
 
 # Create dokku .postgresql directory if not exists
@@ -50,11 +64,6 @@ if [[ ! -d $DOKKU_ROOT/.postgresql ]]; then
     chown -R dokku: $DOKKU_ROOT/.postgresql
 fi
 
-# The container name that will be generated
-CONTAINER_NAME="pg_$APP"
-
-# This is where persistent data will be stored, directly on the host (and not in a container, or so it seems, which is not super clean imo)
-HOST_DIR="$DOKKU_ROOT/.postgresql/$APP"
 
 case "$1" in
 
@@ -101,17 +110,24 @@ case "$1" in
   pg:delete)
     # Stop the container
     ID=$(docker ps -a | grep "$CONTAINER_NAME" |  awk '{print $1}')
-    if [[ ! -z $ID ]]; then
+    if [[ -z $ID ]]; then
+        echo
+    echo "-----> PostgreSQL container does not exist: $DB_IMAGE"
+    else
         docker stop $ID > /dev/null
         docker rm $ID  > /dev/null
     fi
 
-    # Remove persistent volume
-    #... 2do...
+    # Remove host persistent info / volume
+    if [[ -d $HOST_DIR ]]; then
+        rm -rf $HOST_DIR
+    fi
 
     # unlink this container as "postgres"
-    dokku link:delete "$APP" "$CONTAINER_NAME" "$PLUGIN_NAME"
-    dokku config:unset "$APP" $ENVVAR_NAME
+    if [ $APP_EXISTS = true ]; then
+        dokku link:delete "$APP" "$CONTAINER_NAME" "$PLUGIN_NAME"
+        dokku config:unset "$APP" $ENVVAR_NAME
+    fi
     echo "-----> Postgres container deleted: $CONTAINER_NAME"
     ;;
 
@@ -164,8 +180,6 @@ case "$1" in
   pg:psql)
     docker run -it --link $CONTAINER_NAME:postgres --rm postgres sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
     ;;
-
-
 
   help)
     cat && cat<<EOF
