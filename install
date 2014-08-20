@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME="orchardup/postgresql"
+IMAGE_NAME="postgres"
 PG_VERSION="9.3"
 
 # Pull docker image

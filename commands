@@ -3,7 +3,8 @@ set -e;
 #set -vx;
 
 PLUGIN_NAME="postgresql"
-DOCKER_IMAGE="orchardup/postgresql"
+# The official Docker postgres image...
+DOCKER_IMAGE="postgres"
 
 # APP=<db name taken as argument>
 # CONTAINER_NAME=pg_$APP
@@ -160,6 +161,10 @@ case "$1" in
     docker logs $ID | tail -n 100
     ;;
 
+  pg:psql)
+    docker run -it --link $CONTAINER_NAME:postgres --rm postgres sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
+    ;;
+
   help)
     cat && cat<<EOF
     pg:create <db>                                  Create a PostgreSQL container
@@ -168,6 +173,7 @@ case "$1" in
     pg:link <app> <db>                              Link an app to a PostgreSQL database
     pg:list                                         Display list of PostgreSQL containers
     pg:logs <db>                                    Display last logs from PostgreSQL container
+    pg:psql <db>                                    Opens a PostgreSQL console
 EOF
     ;;
 
