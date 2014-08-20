@@ -3,8 +3,8 @@ set -e;
 #set -vx;
 
 PLUGIN_NAME="postgresql"
-# The official Docker postgres image...
-DOCKER_IMAGE="mobula/postgresl"
+DOCKER_IMAGE="mobula/postgresql"
+# Official postgres:9.3 image with additional postgis 2.1
 
 # APP=<db name taken as argument>
 # CONTAINER_NAME=pg_$APP
@@ -107,7 +107,7 @@ case "$1" in
     fi
 
     # Remove persistent volume
-    # ... 2do...
+    #... 2do...
 
     # unlink this container as "postgres"
     dokku link:delete "$APP" "$CONTAINER_NAME" "$PLUGIN_NAME"
@@ -165,8 +165,11 @@ case "$1" in
     docker run -it --link $CONTAINER_NAME:postgres --rm postgres sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
     ;;
 
+
+
   help)
     cat && cat<<EOF
+    pg:psql <db>                                    Open a PostgreSQL console
     pg:create <db>                                  Create a PostgreSQL container
     pg:delete <db>                                  Delete specified PostgreSQL container
     pg:info <db>                                    Display database informations
