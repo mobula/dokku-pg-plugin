@@ -169,7 +169,6 @@ case "$1" in
 
   help)
     cat && cat<<EOF
-    pg:psql <db>                                    Open a PostgreSQL console
     pg:create <db>                                  Create a PostgreSQL container
     pg:delete <db>                                  Delete specified PostgreSQL container
     pg:info <db>                                    Display database informations
