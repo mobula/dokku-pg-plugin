@@ -20,12 +20,7 @@ DOCKER_IMAGE="orchardup/postgresql"
 #     docker run -it --link pgsophie:postgres --rm postgres sh -c 'exec psql -h "$POSTGRES_PORT_5432_TCP_ADDR" -p "$POSTGRES_PORT_5432_TCP_PORT" -U postgres'
 #
 
-DB_PORT='5432'
-DB_NAME='db'
-DB_USER='root'
 ENVVAR_NAME="DATABASE_URL"
-
-PLUGIN_NAME="postgres"
 
 # Check if name is specified
 if [[ $1 == pg:* ]]; then
@@ -173,8 +168,8 @@ case "$1" in
     pg:delete <db>                                  Delete specified PostgreSQL container
     pg:info <db>                                    Display database informations
     pg:link <app> <db>                              Link an app to a PostgreSQL database
-    pg:logs <db>                                    Display last logs from PostgreSQL container
     pg:list                                         Display list of PostgreSQL containers
+    pg:logs <db>                                    Display last logs from PostgreSQL container
 EOF
     ;;
 
