@@ -4,7 +4,7 @@ set -e;
 
 PLUGIN_NAME="postgresql"
 # The official Docker postgres image...
-DOCKER_IMAGE="postgres"
+DOCKER_IMAGE="mobula/postgresl"
 
 # APP=<db name taken as argument>
 # CONTAINER_NAME=pg_$APP
