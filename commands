@@ -106,9 +106,7 @@ case "$1" in
     fi
 
     # Remove persistent volume
-    if [[ -d $HOST_DIR ]]; then
-        rm -rf $HOST_DIR
-    fi
+    # ... 2do...
 
     # unlink this container as "postgres"
     dokku link:delete "$APP" "$CONTAINER_NAME" "$PLUGIN_NAME"
