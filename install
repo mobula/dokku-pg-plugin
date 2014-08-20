@@ -1,11 +1,11 @@
 #!/bin/bash
 
-IMAGE_NAME="mobula/postgresql"
-#GITREPO="https://github.com/mobula/docker-postgresql-postgis"
-GITREPO="https://github.com/mobula/dokku-pg-dockerfiles"
-TMPDIR="/tmp/dokku-pg-dockerfiles"
+IMAGE_NAME="orchardup/postgresql"
+PG_VERSION="9.3"
+
+# Pull docker image
+docker pull #IMAGE_NAME:$PG_VERSION
 
 # Build docker image
-git clone $GITREPO $TMPDIR
-docker build -q=true -t $IMAGE_NAME $TMPDIR
-rm -rf $TMPDIR
+#IMAGE_PATH="github.com/mobula/docker-postgresql-postgis"
+#docker build -q=true -t $IMAGE_NAME $IMAGE_PATH
